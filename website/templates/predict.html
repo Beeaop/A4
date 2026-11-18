@@ -1,0 +1,267 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sentiment Prediction</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #eef2f7;
+            margin: 0;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .container {
+            background-color: white;
+            max-width: 650px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px #d6dce5;
+        }
+
+        h1 {
+            color: #345b85;
+            text-align: center;
+        }
+
+        h2, h3 {
+            color: #345b85;
+        }
+
+        p {
+            line-height: 1.6;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        select {
+            padding: 8px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #345b85;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #254564;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .prediction {
+            background-color: #eef2f7;
+            padding: 12px;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #e4ebf3;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fb;
+        }
+
+        a {
+            color: #345b85;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Sentiment Analysis</h1>
+
+        <p>
+            Enter a movie review to see whether it is
+            positive or negative.
+        </p>
+
+        <form method="POST" action="/predict">
+
+            <label for="review">Enter your movie review:</label>
+
+            <textarea
+                id="review"
+                name="review"
+                rows="5"
+                required>{{ result.text if result else '' }}</textarea>
+
+            <br><br>
+
+            <label for="model">Choose a model:</label>
+            <br>
+
+            <select id="model" name="model">
+
+                <option value="naive_bayes"
+                    {% if result and result.model == 'naive_bayes' %}
+                    selected
+                    {% endif %}>
+                    Naive Bayes
+                </option>
+
+                <option value="decision_tree"
+                    {% if result and result.model == 'decision_tree' %}
+                    selected
+                    {% endif %}>
+                    Decision Tree
+                </option>
+
+            </select>
+
+            <br>
+
+            <button type="submit">Predict Sentiment</button>
+
+        </form>
+
+        {% if result %}
+
+        <div class="results">
+
+            <h2>Results</h2>
+
+            <p>
+                <strong>Your Review:</strong>
+                {{ result.text }}
+            </p>
+
+            <p>
+                <strong>Model Used:</strong>
+
+                {% if result.model == 'naive_bayes' %}
+                    Naive Bayes
+                {% else %}
+                    Decision Tree
+                {% endif %}
+            </p>
+
+            <div class="prediction">
+                <strong>Prediction:</strong>
+                {{ result.prediction }}
+            </div>
+
+            <h3>Prediction Confidence</h3>
+
+            {% for label, probability in result.confidence.items() %}
+
+                <p>
+                    <strong>{{ label }}:</strong>
+                    {{ probability }}%
+                </p>
+
+            {% endfor %}
+
+            <h3>Top Contributing Words</h3>
+
+            {% if result.top_words %}
+
+                <table>
+
+                    <tr>
+                        <th>Word</th>
+                        <th>Direction</th>
+                        <th>Contribution</th>
+                    </tr>
+
+                    {% for item in result.top_words %}
+
+                    <tr>
+                        <td>{{ item.word }}</td>
+                        <td>{{ item.direction }}</td>
+                        <td>{{ item.score }}</td>
+                    </tr>
+
+                    {% endfor %}
+
+                </table>
+
+            {% else %}
+
+                <p>
+                    No contributing words were identified
+                    from this review.
+                </p>
+
+            {% endif %}
+
+            <p>
+                <small>
+                    Positive contributions push towards positive
+                    sentiment, while negative contributions push
+                    towards negative sentiment.
+                </small>
+            </p>
+
+            {% if result.model == 'decision_tree' %}
+
+                <p>
+                    <small>
+                        The Decision Tree only shows words from
+                        your review that were used along its
+                        decision path. It may show fewer than
+                        five words.
+                    </small>
+                </p>
+
+            {% endif %}
+
+        </div>
+
+        {% endif %}
+
+        <a href="/" class="back-link">Back to Home</a>
+
+    </div>
+
+</body>
+</html>
