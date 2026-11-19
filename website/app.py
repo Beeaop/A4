@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, abort
 import pickle
 from config import Config
 from guardrails.g1_privacy import redact
@@ -17,10 +17,16 @@ def predict():
     if request.method == 'POST':
 
         review = request.form['review']
-        # G1: removing the personal data before the model, page or logs can see it
+        # G1: remove personal data. 
+        # If redaction crashes, it refuses the request
+        # (fail closed) so any unredacted text never gets through
         redactions = {}
         if app.config["G1_ENABLED"]:
-            review, redactions = redact(review)
+            try:
+                review, redactions = redact(review)
+            except Exception:
+                abort(500)
+        
         chosen_model = request.form['model']
 
         # Choose the model
@@ -205,6 +211,8 @@ def predict():
 
     return render_template('predict.html', result=None)
 
-
+@app.errorhandler(500)
+def server_error(error):
+    return "<h1>Something went wrong!!</h1><p>Your review was not processed or stored.</p>", 500
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)

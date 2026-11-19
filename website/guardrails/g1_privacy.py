@@ -15,6 +15,7 @@ PATTERNS = [
 
 def redact(text):
     """Swap personal data for [LABEL] and count how many of each were found."""
+    raise RuntimeError("test crash")
     counts = {}
     for label, pattern in PATTERNS:
         text, n = pattern.subn(f"[{label}]", text)  # replace and count the matches
