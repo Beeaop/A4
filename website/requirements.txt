@@ -1,0 +1,9 @@
+flask==3.1.3
+scikit-learn==1.6.1
+numpy
+waitress==3.0.2
+python-dotenv
+pytest
+pandas
+matplotlib
+jupyter

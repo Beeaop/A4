@@ -1,15 +1,14 @@
-
 from flask import Flask, render_template, request
 import pickle
-
-app = Flask(__name__)
-
+from config import Config
 
 @app.route('/')
 @app.route('/index')
 def index():
     return render_template('index.html')
 
+app = Flask(__name__)
+app.config.from_object(Config)
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
