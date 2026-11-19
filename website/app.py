@@ -1,14 +1,15 @@
 from flask import Flask, render_template, request
 import pickle
 from config import Config
+from guardrails.g1_privacy import redact
+
+app = Flask(__name__)
+app.config.from_object(Config)
 
 @app.route('/')
 @app.route('/index')
 def index():
     return render_template('index.html')
-
-app = Flask(__name__)
-app.config.from_object(Config)
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
@@ -16,6 +17,10 @@ def predict():
     if request.method == 'POST':
 
         review = request.form['review']
+        # G1: removing the personal data before the model, page or logs can see it
+        redactions = {}
+        if app.config["G1_ENABLED"]:
+            review, redactions = redact(review)
         chosen_model = request.form['model']
 
         # Choose the model
