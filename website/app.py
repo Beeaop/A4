@@ -70,10 +70,6 @@ def predict():
         words = features.get_feature_names_out()
         review_counts = review_features.toarray()[0]
 
-        print("Recognised words:", [
-            words[i] for i, count in enumerate(review_counts)
-            if count > 0
-        ])
 
         contributions = []
 
@@ -187,7 +183,13 @@ def predict():
             reverse=True
         )[:5]
 
-        print("Top contributing words:", top_words)
+        # G1 ON: logs basic info about the request, not what the user actually wrote
+        # G1 OFF: logs words like the og A3 app
+        if app.config["G1_ENABLED"]:
+            print({"model": chosen_model, "prediction": sentiment, "review_chars": len(review), "redactions": redactions})
+        else:
+            print("Recognised words:", [w for w, c in zip(words, review_counts) if c > 0])
+            print("Top contributing words:", top_words)
 
         # Display results
         return render_template(
