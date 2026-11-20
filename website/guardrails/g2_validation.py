@@ -25,7 +25,6 @@ def clean_text(text):
 #Checking the form. Returns (review, model, error). error is None if it's fine
 
 def validate(form):
-    raise RuntimeError("test crash")
     review = form.get("review")
     model = form.get("model")
 
