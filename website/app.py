@@ -20,7 +20,10 @@ def predict():
         # G2: checks the input first and refuse anything bad.
         # G2 off = the old A3 behaviour (accepts anything).
         if app.config["G2_ENABLED"]:
-            review, chosen_model, error = validate(request.form)
+            try:
+                review, chosen_model, error = validate(request.form)
+            except Exception:
+                abort(400)
             if error:
                 return render_template('predict.html', result=None, error=error), 400
         else:
@@ -224,5 +227,10 @@ def predict():
 @app.errorhandler(500)
 def server_error(error):
     return "<h1>Something went wrong!!</h1><p>Your review was not processed /stored.</p>", 500
+
+@app.errorhandler(400)
+def bad_request(error):
+    return "<h1>Bad request</h1><p>That request could not be processed.</p>", 400
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)
