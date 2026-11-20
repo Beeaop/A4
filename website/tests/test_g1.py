@@ -2,7 +2,6 @@
 import app as app_module
 from guardrails.g1_privacy import redact
 
-
 # The Normal cases
 
 def test_email_is_removed():
