@@ -224,13 +224,21 @@ def predict():
 
     return render_template('predict.html', result=None)
 
-@app.errorhandler(500)
-def server_error(error):
-    return "<h1>Something went wrong!!</h1><p>Your review was not processed /stored.</p>", 500
+# Custom error pages: no stack traces, nothing the user typed is shown back.
+ERRORS = {
+    400: ("Bad request", "That request could not be processed."),
+    404: ("Page not found", "That page does not exist."),
+    413: ("Review too large", "That request was too large for the app to accept."),
+    500: ("Something went wrong", "Your review was not processed or stored."),
+}
 
 @app.errorhandler(400)
-def bad_request(error):
-    return "<h1>Bad request</h1><p>That request could not be processed.</p>", 400
+@app.errorhandler(404)
+@app.errorhandler(413)
+@app.errorhandler(500)
+def error_page(error):
+    title, message = ERRORS[error.code]
+    return render_template("error.html", code=error.code, title=title, message=message), error.code
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)
