@@ -15,7 +15,7 @@ def clean_text(text):
         kind = unicodedata.category(ch)
         if kind == "Cf":  # invisible, e.g. zero-width space: remove it
             continue
-        if kind == "Cc" and ch not in "\n\r\t":  # control character, e.g. NUL: not allowed
+        if kind == "Cc" and ch not in "\n\r\t":  # control character, e.g. NUL is not allowed
             has_control = True
             continue
         kept.append(ch)

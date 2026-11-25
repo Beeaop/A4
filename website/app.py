@@ -3,7 +3,7 @@ import pickle
 from config import Config
 from guardrails.g1_privacy import redact
 from guardrails.g2_validation import validate
-
+from guardrails.g3_abstain import decide_with_abstention
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -89,6 +89,16 @@ def predict():
         # Get the words recognised by the model
         words = features.get_feature_names_out()
         review_counts = review_features.toarray()[0]
+
+        abstain = False
+        if app.config["G3_ENABLED"]:
+            try:
+                probs = {name: value / 100 for name, value in confidence.items()}
+                known_words = int((review_counts > 0).sum())
+                label, conf = decide_with_abstention(probs, known_words)
+                abstain = (label == "uncertain")
+            except Exception:
+                abstain = True
 
         contributions = []
 
@@ -218,7 +228,8 @@ def predict():
                 'prediction': sentiment,
                 'confidence': confidence,
                 'model': chosen_model,
-                'top_words': top_words
+                'top_words': top_words,
+                'abstain': abstain
             }
         )
 

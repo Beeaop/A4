@@ -188,6 +188,13 @@
                 {% endif %}
             </p>
 
+            {% if result.abstain %}
+                <div class="prediction">
+                    <strong>No result:</strong> the model isn't sure about this review
+                    (too few words it recognises, or low confidence), so it isn't giving an answer.
+                </div>
+            {% else %}
+
             <div class="prediction">
                 <strong>Prediction:</strong>
                 {{ result.prediction }}
@@ -255,6 +262,8 @@
                         five words.
                     </small>
                 </p>
+
+            {% endif %}
 
             {% endif %}
 
