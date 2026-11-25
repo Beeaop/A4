@@ -17,30 +17,31 @@ def index():
 def predict():
     if request.method == 'POST':
 
-        # G2: checks the input first and refuse anything bad.
+        # Read the form outside the try, so a too-large request still gives a 413 page
+        form = request.form
+
+        # G2: checks the input first and refuses anything bad.
         # G2 off = the old A3 behaviour (accepts anything).
         if app.config["G2_ENABLED"]:
             try:
-                review, chosen_model, error = validate(request.form)
+                review, chosen_model, error = validate(form)
             except Exception:
                 abort(400)
             if error:
                 return render_template('predict.html', result=None, error=error), 400
         else:
-            review = request.form['review']
-            chosen_model = request.form['model']
+            review = form['review']
+            chosen_model = form['model']
 
-        # G1: remove personal data. 
+        # G1: remove personal data.
         # If redaction crashes, it refuses the request
         # (fail closed) so any unredacted text never gets through
-
         redactions = {}
         if app.config["G1_ENABLED"]:
             try:
                 review, redactions = redact(review)
             except Exception:
                 abort(500)
-   
 
         # Choose the model
         if chosen_model == 'decision_tree':
@@ -88,7 +89,6 @@ def predict():
         # Get the words recognised by the model
         words = features.get_feature_names_out()
         review_counts = review_features.toarray()[0]
-
 
         contributions = []
 
@@ -223,7 +223,6 @@ def predict():
         )
 
     return render_template('predict.html', result=None)
-
 # Custom error pages: no stack traces, nothing the user typed is shown back.
 ERRORS = {
     400: ("Bad request", "That request could not be processed."),
@@ -236,9 +235,10 @@ ERRORS = {
 @app.errorhandler(404)
 @app.errorhandler(413)
 @app.errorhandler(500)
+
 def error_page(error):
     title, message = ERRORS[error.code]
     return render_template("error.html", code=error.code, title=title, message=message), error.code
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001)
+    app.run(host='127.0.0.1', port=5001, debug=False)
